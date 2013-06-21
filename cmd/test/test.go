@@ -87,6 +87,7 @@ func main() {
 	s, _ := netlink.DialNetlink("route", 0)
 	TestRouteLink(s)
 	TestRouteAddr(s)
+	s, _ = netlink.DialNetlink("inet_diag", 0)
 	TestInetDiag(s)
 
 	// NETLINK_GENERIC tests
