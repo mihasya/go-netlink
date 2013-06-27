@@ -47,8 +47,8 @@ func DialNetlink(family string, mask uint32) (conn *NetlinkConn, er error) {
 		familyno = syscall.NETLINK_ROUTE
 	case "conn":
 		familyno = syscall.NETLINK_CONNECTOR
-  case "inet_diag":
-    familyno = syscall.NETLINK_INET_DIAG
+	case "inet_diag":
+		familyno = syscall.NETLINK_INET_DIAG
 	default:
 		fd = 0
 		er = fmt.Errorf("Invalid netlink family: %s", family)
