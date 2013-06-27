@@ -22,6 +22,29 @@ func TestRouteLink(s *netlink.NetlinkConn) {
 	}
 }
 
+func TestInetDiag(s *netlink.NetlinkConn) {
+	msg := netlink.MakeInetDiagMessage(syscall.AF_INET)
+	fmt.Printf("diag message created: %v\n", syscall.AF_INET)
+	netlink.WriteMessage(s, msg)
+	fmt.Println("diag message written")
+
+	for {
+		fmt.Println("message bout to read")
+		resp, _ := netlink.ReadMessage(s)
+		fmt.Println("message was read")
+		parsedmsg, er := netlink.ParseInetDiagMessage(resp)
+		if parsedmsg == nil {
+			fmt.Println("message parse fail")
+			break
+		}
+		if er != nil {
+			fmt.Println(resp)
+		}
+		msg_s, _ := json.MarshalIndent(parsedmsg, "", "  ")
+		fmt.Printf("Errmsg: %#v\nAddrMsg = %s\n", er, msg_s)
+	}
+}
+
 func TestRouteAddr(s *netlink.NetlinkConn) {
 	msg := netlink.MakeRouteMessage(syscall.RTM_GETADDR, syscall.AF_UNSPEC)
 	netlink.WriteMessage(s, msg)
@@ -64,6 +87,7 @@ func main() {
 	s, _ := netlink.DialNetlink("route", 0)
 	TestRouteLink(s)
 	TestRouteAddr(s)
+	TestInetDiag(s)
 
 	// NETLINK_GENERIC tests
 	s, _ = netlink.DialNetlink("generic", 0)

@@ -12,4 +12,5 @@ type LinkStats64 C.struct_rtnl_link_stats64
 type IfMap C.struct_rtnl_link_ifmap
 
 type LinkCacheInfo C.struct_ifla_cacheinfo
-type AddrCacheInfo C.struct_ifa_cacheinfo
+
+//type AddrCacheInfo C.struct_ifa_cacheinfo

@@ -88,6 +88,10 @@ func ParseRouteLinkMessage(msg syscall.NetlinkMessage) (ParsedNetlinkMessage, er
 	return m, er
 }
 
+type AddrCacheInfo struct {
+	Data [4]uint32
+}
+
 // address messages
 type RouteAddrMessage struct {
 	Header syscall.NlMsghdr
