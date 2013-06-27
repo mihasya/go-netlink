@@ -12,6 +12,7 @@ var netlinkFamilies = map[uint16]string{
 	syscall.NETLINK_GENERIC:   "generic",
 	syscall.NETLINK_ROUTE:     "route",
 	syscall.NETLINK_CONNECTOR: "conn",
+	syscall.NETLINK_INET_DIAG: "inet_diag",
 }
 
 type NetlinkConn struct {
@@ -46,6 +47,8 @@ func DialNetlink(family string, mask uint32) (conn *NetlinkConn, er error) {
 		familyno = syscall.NETLINK_ROUTE
 	case "conn":
 		familyno = syscall.NETLINK_CONNECTOR
+  case "inet_diag":
+    familyno = syscall.NETLINK_INET_DIAG
 	default:
 		fd = 0
 		er = fmt.Errorf("Invalid netlink family: %s", family)
