@@ -9,8 +9,8 @@ import (
 )
 
 func MakeInetDiagMessage(socktype int) (msg RawNetlinkMessage) {
-	msg.Header.Type = uint16(socktype)
-	msg.Header.Flags = syscall.NLM_F_ROOT | syscall.NLM_F_MATCH | syscall.NLM_F_REQUEST
+	msg.Header.Type = TCPDIAG_GETSOCK
+	msg.Header.Flags = syscall.NLM_F_ROOT | syscall.NLM_F_REQUEST
 
 	buf := make([]byte, 0)
 	w := bytes.NewBuffer(buf)
@@ -29,6 +29,10 @@ func MakeInetDiagMessage(socktype int) (msg RawNetlinkMessage) {
 
 	return msg
 }
+
+const (
+	TCPDIAG_GETSOCK = 18
+)
 
 const (
 	SS_UNKNOWN = iota
@@ -71,20 +75,20 @@ type InetDiagSockId struct {
 }
 
 type InetDiagMsg struct {
-	Header syscall.NlMsghdr
+	Header syscall.NlMsghdr `netlink:"1" type:"nested"`
 
-	Family  byte `netlink:"1" type:"fixed"`
-	State   byte `netlink:"2" type:"fixed"`
-	Timer   byte `netlink:"3" type:"fixed"`
-	Retrans byte `netlink:"4" type:"fixed"`
+	Family  byte `netlink:"2" type:"fixed"`
+	State   byte `netlink:"3" type:"fixed"`
+	Timer   byte `netlink:"4" type:"fixed"`
+	Retrans byte `netlink:"5" type:"fixed"`
 
-	Id InetDiagSockId `netlink:"5" type:"nested"`
+	Id InetDiagSockId `netlink:"6" type:"nested"`
 
-	Expires uint32 `netlink:"6" type:"fixed"`
-	Rqueue  uint32 `netlink:"7" type:"fixed"`
-	Wqueue  uint32 `netlink:"8" type:"fixed"`
-	Uid     uint32 `netlink:"9" type:"fixed"`
-	Inode   uint32 `netlink:"10" type:"fixed"`
+	Expires uint32 `netlink:"7" type:"fixed"`
+	Rqueue  uint32 `netlink:"8" type:"fixed"`
+	Wqueue  uint32 `netlink:"9" type:"fixed"`
+	Uid     uint32 `netlink:"10" type:"fixed"`
+	Inode   uint32 `netlink:"11" type:"fixed"`
 }
 
 func ParseInetDiagMessage(msg syscall.NetlinkMessage) (ParsedNetlinkMessage,
