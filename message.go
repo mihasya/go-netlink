@@ -3,7 +3,6 @@ package netlink
 import (
 	"bytes"
 	"encoding/binary"
-	"os"
 	"syscall"
 )
 
@@ -31,7 +30,7 @@ func WriteMessage(s *NetlinkConn, m NetlinkMsg) error {
 	msg := m.toRawMsg()
 	msg.Header.Len = uint32(syscall.NLMSG_HDRLEN + len(msg.Data))
 	msg.Header.Seq = globalSeq
-	msg.Header.Pid = uint32(os.Getpid())
+	msg.Header.Pid = 0
 	globalSeq++
 	binary.Write(w, SystemEndianness, msg.Header) // 16 bytes
 	_, er := w.Write(msg.Data)

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	//"net"
 	"syscall"
 )
 
@@ -51,52 +50,64 @@ const (
 	SS_ALL = ((1 << SS_MAX) - 1)
 )
 
-type IPWrap struct {
-	IP []byte `netlink:"1" type:"bytes"`
-}
-
 type InetDiagReq struct {
-	Family    byte           `netlink:"1" type:"fixed"`
-	SourceLen byte           `netlink:"2" type:"fixed"`
-	DestLen   byte           `netlink:"3" type:"fixed"`
-	Ext       byte           `netlink:"4" type:"fixed"`
-	Id        InetDiagSockId `netlink:"5" type:"nested"`
-	States    uint32         `netlink:"6" type:"fixed"`
-	Dbs       uint32         `netlink:"7" type:"fixed"`
+	Family    uint8
+	SourceLen uint8
+	DestLen   uint8
+	Ext       uint8
+	Id        InetDiagSockId
+	States    uint32
+	Dbs       uint32
 }
 
 type InetDiagSockId struct {
-	SourcePort    uint16    `netlink:"1" type:"fixed"`
-	DestPort      uint16    `netlink:"2" type:"fixed"`
-	SourceAddress [4]byte   `netlink:"3" type:"bytes"`
-	DestAddress   [4]byte   `netlink:"4" type:"bytes"`
-	If            uint32    `netlink:"5" type:"fixed"`
-	Cookie        [2]uint32 `netlink:"6" type:"fixed"`
+	SourcePort    uint16
+	DestPort      uint16
+	SourceAddress [4]uint32
+	DestAddress   [4]uint32
+	If            uint32
+	Cookie        [2]uint32
 }
 
 type InetDiagMsg struct {
-	Header syscall.NlMsghdr `netlink:"1" type:"nested"`
+  Header       syscall.NlMsghdr
+  InetDiagData InetDiagMsgData
+}
 
-	Family  byte `netlink:"2" type:"fixed"`
-	State   byte `netlink:"3" type:"fixed"`
-	Timer   byte `netlink:"4" type:"fixed"`
-	Retrans byte `netlink:"5" type:"fixed"`
+type InetDiagMsgData struct {
+	Family  uint8
+	State   uint8
+	Timer   uint8
+	Retrans uint8
+	Id InetDiagSockId
+	Expires uint32
+	Rqueue  uint32
+	Wqueue  uint32
+	Uid     uint32
+	Inode   uint32
+}
 
-	Id InetDiagSockId `netlink:"6" type:"nested"`
-
-	Expires uint32 `netlink:"7" type:"fixed"`
-	Rqueue  uint32 `netlink:"8" type:"fixed"`
-	Wqueue  uint32 `netlink:"9" type:"fixed"`
-	Uid     uint32 `netlink:"10" type:"fixed"`
-	Inode   uint32 `netlink:"11" type:"fixed"`
+func readInetDiagMsg(r *bytes.Buffer, m *InetDiagMsgData) (er error) {
+    /* Reminder:
+     *
+     *  This data comes off the wire as it would come off the wire had we been
+     *  using the C netlink API.
+     *
+     *  This means, specifically, that if you want to actually print the ports
+     *  or IP address, you will first need to do the equivalent of ntohs(port)
+     *  or ntohl(ipaddress) prior to outputting or bit shifting.
+     */
+    binary.Read(r, SystemEndianness, m)
+    return
 }
 
 func ParseInetDiagMessage(msg syscall.NetlinkMessage) (ParsedNetlinkMessage,
 	error) {
+
 	m := new(InetDiagMsg)
 	m.Header = msg.Header
 	buf := bytes.NewBuffer(msg.Data)
 
-	err := ReadManyAttributes(buf, m)
+	err := readInetDiagMsg(buf, &m.InetDiagData)
 	return m, err
 }
